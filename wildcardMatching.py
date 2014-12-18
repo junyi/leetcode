@@ -17,107 +17,56 @@
 # isMatch("ab", "?*") -> true
 # isMatch("aab", "c*a*b") -> false
 
+# Reference: http://yucoding.blogspot.com/2013/02/leetcode-question-123-wildcard-matching.html
+
 class Solution:
     # @param s, an input string
     # @param p, a pattern string
     # @return a boolean
 
-    def isSymbol(self, p):
-        return p in ['?', '*'] 
-
-    def processPattern(self, p):
-        if '*' in p:
-            return '*'
-        return p
-
-    def sanitizePattern(self, p):
-        splitted = []
-        if len(p) > 1:
-            previous_index = 0
-            for i in range(1, len(p)):
-                previous = p[i-1]
-                if (previous == '?' and p[i] != '?'):
-                    splitted.append(p[previous_index:i])
-                    previous_index = i
-                elif (previous == '*' and p[i] != '*'):
-                    splitted.append(p[previous_index:i])
-                    previous_index = i
-                elif (not self.isSymbol(previous) and self.isSymbol(p[i])):
-                    splitted.append(p[previous_index:i])
-                    previous_index = i
-                if (previous == '?' and i == len(p)-1):
-                    splitted.append(p[previous_index:])
-                elif (previous == '*' and i == len(p)-1):
-                    splitted.append(p[previous_index:])
-                elif (not self.isSymbol(previous) and i == len(p)-1):
-                    splitted.append(p[previous_index:])
-        else:
-            splitted.append(p)
-
-        for i in range(len(splitted)):
-            splitted[i] = self.processPattern(splitted[i])
-
-        splitted = [i for i in splitted if i != '']
-
-        return splitted
-
     def isMatch(self, s, p):
-        p = self.sanitizePattern(''.join(p))
-        # print s, p
-        if len(p) == 0:
-            return len(s) == 0
-        else:
-            pattern = p[0]
-            if '?' in pattern:
-                if len(s) >= len(pattern):
-                    s = s[len(pattern):]
-                    p.pop(0)
-                    return self.isMatch(s, p)
-                return False
-            elif '*' in pattern:
-                if len(p) > 1:
-                    next_pattern = p[1]
-                    if '?' in next_pattern:
-                        p.pop()
-                        l = len(next_pattern)
-                        if len(s) >= l:
-                            s = s[l:]
-                        else:
-                            return False
-                    else:
-                        if next_pattern in s:
-                            s = s[s.rindex(next_pattern)+len(pattern):]
-                            p.pop(0)
-                            p.pop(0)
-                            return self.isMatch(s, p)
-                        else:
-                            return False
-                    p.pop(0)
-                    return self.isMatch(s, p)
-                else:
-                    return True
-            else:
-                if pattern in s:
-                    # print 's1', s, len(pattern), s.rindex(pattern)
-                    s = s[s.index(pattern)+len(pattern):]
-                    p.pop(0)
-                    # print 's2', s
-                    return self.isMatch(s, p)
-                else:
-                    return False
+        ls = len(s)
+        lp = len(p)
 
+        i = 0
+        j = 0
+        match = 0
+        star = -1
+
+        while i < ls:
+            if j < lp and (s[i] == p[j] or p[j] == '?'):
+                i += 1
+                j += 1
+            elif j < lp and p[j] == '*':
+                match = i
+                star = j
+                j += 1
+            elif star != -1:
+                j = star + 1
+                match += 1
+                i = match
+            else:
+                return False
+
+        while j < lp and p[j] == '*':
+            j += 1
+
+        if j == lp:
+            return True
+        else:
+            return False
 
 sol = Solution()
 # print sol.sanitizePattern('abc*d')
 # print sol.isMatch("","*")
-# print sol.isMatch("aa","aa")
-print sol.isMatch("b", "?*?")
-print sol.isMatch("ab", "?*?")
+print sol.isMatch("aa","aa")  # True
+print sol.isMatch("b", "?*?")  # True
+print sol.isMatch("ab", "?*?") # True
 print sol.isMatch("a", "aa")
 print sol.isMatch("aa", "*")
 print sol.isMatch("hi", "*?")
-# print sol.isMatch("abcede", "abc*d")
-# print sol.isMatch("aabbcsdbsdsdsdc", "a?b*c")
+print sol.isMatch("abcede", "abc*d")
+print sol.isMatch("aabbcsdbsdsdsdc", "a?b*c")
 # print sol.isMatch("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
     # aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
     # aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
